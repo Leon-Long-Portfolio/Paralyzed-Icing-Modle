@@ -43,7 +43,7 @@ inline int nn(int site,int mu)
 int  FindGraph(int **frozen,int  *spin, double  *K);
 int  FindClusters(int * label, int **frozen, int* size);
 void printArray(int * array);
-int  HeatBathUpdate(int * spin, double *K);
+void SwendsenWangUpdate(int **frozen, int *spin, double *K);
 
 int main()
 {
@@ -76,7 +76,7 @@ int main()
     {
       cout << "Printf rozen["<< mu<<"] ";//termalize with Heat Bath
   for(int iter =0; iter < 100; iter++)
-    HeatBathUpdate( spin, K);
+    SwendsenWangUpdate( spin, K);
       for(int i = 0; i < N; i++) temp[i] = frozen[i][mu];
       printArray(temp);
     }
@@ -107,9 +107,9 @@ int main()
    K[1] = 0.9 * beta_critical;
   
   for(int iter =0; iter < 1000; iter++)
-    HeatBathUpdate( spin, K);
+    SwendsenWangUpdate(frozen, spin, K);
 
-   cout << "spin array  after Heat Bath with N = " << N<< endl;
+   cout << "spin array  after Swendsen-Wang update with N = " << N<< endl;
   printArray(spin);
   
   return 0;
@@ -181,28 +181,38 @@ int  FindClusters(int* label, int ** frozen,int  * size)
   return cluster_number; // signed cluster
 }
 
-int  HeatBathUpdate(int * spin, double *K)
-{
-  int h = 0;
-  int flip = 0;
-  double random_value = -1.0;
-  
-  for(int site = 0; site < N; site++)
-    {
-      h = 0; 
-      for(int mu = 0; mu <4; mu++)
-	{
-	  h += spin[nn(site, mu)] ;
-	};
-      
-      //  cout << "   h and Prob in HeatBath  " <<  h << "   " <<  exp(h*K[0])/(exp(h*K[0]) + exp(-h*K[0])) << endl;
-      random_value = (double)rand()/(double)RAND_MAX;
-      //   cout << "   random value " <<  random_value << endl;  
-      random_value <  exp(h*K[0])/(exp(h*K[0]) + exp(-h*K[0])) ? flip =  1 : flip = -1;
-      //     cout << " flip = " << flip <<endl;
-      spin[site] = flip;
+// Swendsen-Wang Update Algorithm
+void SwendsenWangUpdate(int **frozen, int *spin, double *K) {
+  double beta = 1.0 / K[0]; // Inverse temperature
+
+    // Generate bonds based on spin states and interaction strength
+    for (int s1 = 0; s1 < N; s1++) {
+        for (int mu = 0; mu < 3; mu++) {
+            if (spin[nn(s1, mu)] == spin[s1] && ((double)rand() / RAND_MAX) < (1.0 - exp(-2.0 * beta))) {
+                frozen[s1][mu] = 1; frozen[nn(s1, mu)][mu + 3] = 1;
+            }
+            else {
+                frozen[s1][mu] = 0; frozen[nn(s1, mu)][mu + 3] = 0;
+            }
+        }
     }
-  return 0;
+
+    // Cluster identification
+    int label[N];
+    int size[N];
+    int ClusterTotal;
+    ClusterTotal = FindClusters(label, frozen, size);
+
+    // Flip spins in each cluster with a probability
+    for (int i = 1; i <= ClusterTotal; i++) {
+        if (((double)rand() / RAND_MAX) < exp(-2.0 * beta * size[i - 1])) {
+            for (int j = 0; j < N; j++) {
+                if (label[j] == i) {
+                    spin[j] *= -1; // Flip the spin
+                }
+            }
+        }
+    }
 }
 									      
   

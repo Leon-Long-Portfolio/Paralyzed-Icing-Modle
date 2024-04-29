@@ -43,7 +43,7 @@ inline int nn(int site,int mu)
 int  FindGraph(int **frozen,int  *spin, double  *K);
 int  FindClusters(int * label, int **frozen, int* size);
 void printArray(int * array);
-int  HeatBathUpdate(int * spin, double *K);
+void WolffUpdate(int *spin, double *K);
 
 int main()
 {
@@ -76,7 +76,7 @@ int main()
     {
       cout << "Printf rozen["<< mu<<"] ";//termalize with Heat Bath
   for(int iter =0; iter < 100; iter++)
-    HeatBathUpdate( spin, K);
+    WolffUpdate( spin, K);
       for(int i = 0; i < N; i++) temp[i] = frozen[i][mu];
       printArray(temp);
     }
@@ -107,9 +107,9 @@ int main()
    K[1] = 0.9 * beta_critical;
   
   for(int iter =0; iter < 1000; iter++)
-    HeatBathUpdate( spin, K);
+    WolffUpdate( spin, K);
 
-   cout << "spin array  after Heat Bath with N = " << N<< endl;
+   cout << "spin array  after Wolff Update with N = " << N<< endl;
   printArray(spin);
   
   return 0;
@@ -181,28 +181,33 @@ int  FindClusters(int* label, int ** frozen,int  * size)
   return cluster_number; // signed cluster
 }
 
-int  HeatBathUpdate(int * spin, double *K)
-{
-  int h = 0;
-  int flip = 0;
-  double random_value = -1.0;
-  
-  for(int site = 0; site < N; site++)
-    {
-      h = 0; 
-      for(int mu = 0; mu <4; mu++)
-	{
-	  h += spin[nn(site, mu)] ;
-	};
-      
-      //  cout << "   h and Prob in HeatBath  " <<  h << "   " <<  exp(h*K[0])/(exp(h*K[0]) + exp(-h*K[0])) << endl;
-      random_value = (double)rand()/(double)RAND_MAX;
-      //   cout << "   random value " <<  random_value << endl;  
-      random_value <  exp(h*K[0])/(exp(h*K[0]) + exp(-h*K[0])) ? flip =  1 : flip = -1;
-      //     cout << " flip = " << flip <<endl;
-      spin[site] = flip;
+// Wolff Update Algorithm
+void WolffUpdate(int *spin, double *K) {
+    double beta = 1.0 / K[0]; // Inverse temperature
+
+    // Randomly choose a spin site
+    int site = rand() % N;
+    int spin_value = spin[site];
+
+    // Perform Wolff cluster flipping
+    std::stack<int> stack;
+    stack.push(site);
+    while (!stack.empty()) {
+        int current_site = stack.top();
+        stack.pop();
+
+        // Flip the spin with a probability based on the interaction strength and current spin state
+        if (spin[current_site] == spin_value && ((double)rand() / RAND_MAX) < (1.0 - exp(-2.0 * beta))) {
+            spin[current_site] *= -1; // Flip the spin
+            // Add neighboring sites with the same spin to the stack
+            for (int mu = 0; mu < 6; mu++) {
+                int neighbor = nn(current_site, mu);
+                if (spin[neighbor] == spin_value) {
+                    stack.push(neighbor);
+                }
+            }
+        }
     }
-  return 0;
 }
 									      
   
