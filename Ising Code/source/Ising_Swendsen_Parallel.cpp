@@ -187,6 +187,7 @@ void SwendsenWangUpdate(int **frozen, int *spin, double *K) {
   double beta = 1.0 / K[0]; // Inverse temperature
 
     // Generate bonds based on spin states and interaction strength
+    #pragma omp parallel for collapse(2) // Parallelize nested loop
     for (int s1 = 0; s1 < N; s1++) {
         for (int mu = 0; mu < 3; mu++) {
             if (spin[nn(s1, mu)] == spin[s1] && ((double)rand() / RAND_MAX) < (1.0 - exp(-2.0 * beta))) {
@@ -205,6 +206,7 @@ void SwendsenWangUpdate(int **frozen, int *spin, double *K) {
     ClusterTotal = FindClusters(label, frozen, size);
 
     // Flip spins in each cluster with a probability
+    #pragma omp parallel for // Parallelize loop
     for (int i = 1; i <= ClusterTotal; i++) {
         if (((double)rand() / RAND_MAX) < exp(-2.0 * beta * size[i - 1])) {
             for (int j = 0; j < N; j++) {
