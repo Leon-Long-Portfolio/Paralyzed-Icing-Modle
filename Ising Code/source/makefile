@@ -18,10 +18,10 @@ all: $(BIN)
 %: %.cpp $(INC)
 	mkdir -p $(BIN_DIR)
 ifneq ($(strip $(NON_PARALLEL_FILES)),)
-	$(CXX) $(CXXFLAGS) -I $(INC_DIR) $(filter %.cpp, $^) -o $(BIN_DIR)/$@
+	$(CXX) $(CXXFLAGS) -I $(INC_DIR) $(filter %.cpp, $^) -o $(BIN_DIR)/$@ -O3
 endif
 ifneq ($(strip $(PARALLEL_FILES)),)
-	$(CXX) $(CXXFLAGS) $(OMPFLAGS) -I $(INC_DIR) $(filter %.cpp, $^) -o $(BIN_DIR)/$@ $(OMPFLAGS)
+	$(CXX) $(CXXFLAGS) $(OMPFLAGS) -I $(INC_DIR) $(filter %.cpp, $^) -o $(BIN_DIR)/$@ $(OMPFLAGS) -O3
 endif
 
 clean:
