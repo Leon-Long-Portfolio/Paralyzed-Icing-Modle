@@ -8,8 +8,8 @@
 using namespace std;
 using namespace std::chrono;
 
-#define Lx  16  // 16 
-#define Ly  16 // 16
+#define Lx  32  // 16 
+#define Ly  32 // 16
 #define N  Lx*Ly
 
 #define max(a,b) (a>b?a:b)
