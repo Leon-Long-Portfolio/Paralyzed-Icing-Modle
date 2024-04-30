@@ -21,7 +21,7 @@ ifneq ($(strip $(NON_PARALLEL_FILES)),)
 	$(CXX) $(CXXFLAGS) -I $(INC_DIR) $(filter %.cpp, $^) -o $(BIN_DIR)/$@
 endif
 ifneq ($(strip $(PARALLEL_FILES)),)
-	$(CXX) $(CXXFLAGS) $(OMPFLAGS) -I $(INC_DIR) $(filter %.cpp, $^) -o $(BIN_DIR)/$@
+	$(CXX) $(CXXFLAGS) $(OMPFLAGS) -I $(INC_DIR) $(filter %.cpp, $^) -o $(BIN_DIR)/$@ $(OMPFLAGS)
 endif
 
 clean:
