@@ -1,13 +1,14 @@
 #include <iostream>
 #include <math.h>
 #include <stack>
+#include <omp.h>
+#include <chrono>
 using namespace std;
+using namespace std::chrono;
 
 #define Lx  16  // 16 
 #define Ly  16 // 16
 #define N  Lx*Ly
-
-
 
 #define max(a,b) (a>b?a:b)
 #define min(a,b) (a>b?b:a)
@@ -16,7 +17,6 @@ inline int mod(int x, int n)
 {
   return  (n + (x % n))%n;
 }
-
 
 inline int nn(int site,int mu)
 {
@@ -45,7 +45,6 @@ int  HeatBathUpdate(int * spin, double *K);
 
 int main()
 {
-
   int  spin[N];
   double K[2];
   double beta_critical = log(1.0 + sqrt(2.0))/2.0;  // square lattice
@@ -66,7 +65,9 @@ int main()
   for(int s = 0; s < N; ++s)    
     frozen[s] = new int[4];   // column count
   
- FindGraph(frozen, spin,K);
+  auto start = high_resolution_clock::now(); // Start measuring time
+  
+  FindGraph(frozen, spin,K);
 
 #if 0 
   int temp[N];
@@ -109,6 +110,15 @@ int main()
 
    cout << "spin array  after Heat Bath with N = " << N<< endl;
   printArray(spin);
+  
+  auto stop = high_resolution_clock::now(); // Stop measuring time
+  auto duration = duration_cast<milliseconds>(stop - start); // Calculate duration
+
+  // Print running time statistics
+  cout << "Running Time: " << duration.count() << " milliseconds" << endl;
+  
+  // Print the number of threads being used
+  cout << "Number of Threads: " << omp_get_max_threads() << endl;
   
   return 0;
 }

@@ -1,13 +1,13 @@
 #include <iostream>
 #include <math.h>
 #include <stack>
+#include <chrono>
 using namespace std;
+using namespace std::chrono;
 
 #define Lx  16  // 16 
 #define Ly  16 // 16
 #define N  Lx*Ly
-
-
 
 #define max(a,b) (a>b?a:b)
 #define min(a,b) (a>b?b:a)
@@ -16,7 +16,6 @@ inline int mod(int x, int n)
 {
   return  (n + (x % n))%n;
 }
-
 
 inline int nn(int site,int mu)
 {
@@ -45,7 +44,6 @@ int  HeatBathUpdate(int * spin, double *K);
 
 int main()
 {
-
   int  spin[N];
   double K[2];
   double beta_critical = log(1.0 + sqrt(2.0))/2.0;  // square lattice
@@ -66,7 +64,9 @@ int main()
   for(int s = 0; s < N; ++s)    
     frozen[s] = new int[4];   // column count
   
- FindGraph(frozen, spin,K);
+  auto start = high_resolution_clock::now(); // Start measuring time
+  
+  FindGraph(frozen, spin,K);
 
 #if 0 
   int temp[N];
@@ -109,6 +109,12 @@ int main()
 
    cout << "spin array  after Heat Bath with N = " << N<< endl;
   printArray(spin);
+  
+  auto stop = high_resolution_clock::now(); // Stop measuring time
+  auto duration = duration_cast<milliseconds>(stop - start); // Calculate duration
+
+  // Print running time statistics
+  cout << "Running Time: " << duration.count() << " milliseconds" << endl;
   
   return 0;
 }
@@ -179,36 +185,29 @@ int  FindClusters(int* label, int ** frozen,int  * size)
   return cluster_number; // signed cluster
 }
 
-int HeatBathUpdate(int *spin, double *K) {
-    int h = 0;
-    int flip = 0;
-    double beta = 1.0 / K[0]; // Inverse temperature
-    double random_value = -1.0;
-
-    for (int site = 0; site < N; site++) {
-        h = 0;
-        for (int mu = 0; mu < 4; mu++) {
-            h += spin[nn(site, mu)];
-        };
-
-        // Metropolis Algorithm: Calculate the probability of flipping the spin
-        double prob_flip = exp(-2.0 * beta * h);
-
-        // Generate a random number to decide whether to flip the spin
-        random_value = (double)rand() / (double)RAND_MAX;
-
-        // Decide whether to flip the spin based on the probability
-        if (random_value < prob_flip) {
-            flip = 1; // Flip the spin
-        } else {
-            flip = -1; // Do not flip the spin
-        }
-
-        spin[site] = flip; // Update the spin
+int  HeatBathUpdate(int * spin, double *K)
+{
+  int h = 0;
+  int flip = 0;
+  double random_value = -1.0;
+  
+  for(int site = 0; site < N; site++)
+    {
+      h = 0; 
+      for(int mu = 0; mu <4; mu++)
+	{
+	  h += spin[nn(site, mu)] ;
+	};
+      
+      //  cout << "   h and Prob in HeatBath  " <<  h << "   " <<  exp(h*K[0])/(exp(h*K[0]) + exp(-h*K[0])) << endl;
+      random_value = (double)rand()/(double)RAND_MAX;
+      //   cout << "   random value " <<  random_value << endl;  
+      random_value <  exp(h*K[0])/(exp(h*K[0]) + exp(-h*K[0])) ? flip =  1 : flip = -1;
+      //     cout << " flip = " << flip <<endl;
+      spin[site] = flip;
     }
-    return 0;
+  return 0;
 }
-
 									      
   
   
