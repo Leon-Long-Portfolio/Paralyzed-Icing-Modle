@@ -9,6 +9,7 @@ INC_DIR=../include
 INC=$(wildcard $(INC_DIR)/*.h)
 
 PARALLEL_FILES=$(wildcard *parallel*.cpp)
+NON_PARALLEL_FILES=$(filter-out $(PARALLEL_FILES), $(SRC))
 
 .PHONY: all clean
 
@@ -16,8 +17,12 @@ all: $(BIN)
 
 %: %.cpp $(INC)
 	mkdir -p $(BIN_DIR)
-	$(CXX) $(CXXFLAGS) -I $(INC_DIR) $(filter-out $(PARALLEL_FILES), $^) -o $(BIN_DIR)/$@
-	$(CXX) $(CXXFLAGS) $(OMPFLAGS) -I $(INC_DIR) $(filter $(PARALLEL_FILES), $^) -o $(BIN_DIR)/$@ $(LDLIBS)
+ifneq ($(strip $(NON_PARALLEL_FILES)),)
+	$(CXX) $(CXXFLAGS) -I $(INC_DIR) $(filter %.cpp, $^) -o $(BIN_DIR)/$@
+endif
+ifneq ($(strip $(PARALLEL_FILES)),)
+	$(CXX) $(CXXFLAGS) $(OMPFLAGS) -I $(INC_DIR) $(filter %.cpp, $^) -o $(BIN_DIR)/$@
+endif
 
 clean:
 	$(RM) -r $(addprefix $(BIN_DIR)/, $(BIN)) *~*~
