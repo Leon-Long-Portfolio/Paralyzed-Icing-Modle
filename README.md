@@ -24,6 +24,7 @@ If running on the SCC, you can run the repo by:
         - Note: You will need to run this command every time you want to change the number of threads.
     - Run a Parallelized file like Ising_Heat_Parallel with: `./Ising_Heat_Parallel`
     - If you need help running the code, refer to the following page on the SCC: [OpenMP on the SCC](https://www.bu.edu/tech/support/research/software-and-programming/programming/multiprocessor/)
+    - **Note:** To change the value of N, you will need to edit the values of Lx and Ly at the top of the script you want to change it for and recompile the script (also take note that Lx * Ly = N and we recommend that Lx = Ly) via the makefile.
 
 ## Usage
 1. Compile the code using the provided Makefile
